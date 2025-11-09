@@ -3,6 +3,7 @@ import { ChatAPI, type Chat, type Message } from '../lib/api'
 import { toast } from 'sonner'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import ReactMarkdown from 'react-markdown'
 
 export default function ChatPage() {
   const { t } = useTranslation()
@@ -14,7 +15,7 @@ export default function ChatPage() {
   const [sending, setSending] = useState(false)
   const navigate = useNavigate()
   const messagesEndRef = useRef<HTMLDivElement>(null)
-  const typingTimerRef = useRef<NodeJS.Timeout | null>(null)
+  const typingTimerRef = useRef<number | null>(null)
 
   useEffect(() => {
     if (!localStorage.getItem('token')) {
@@ -188,7 +189,13 @@ export default function ChatPage() {
           {history.map((m) => (
             <div key={m.id} className={`max-w-[80%] px-3 py-2 rounded ${m.role === 'user' ? 'bg-blue-600 text-white ml-auto' : 'bg-slate-100'}`}>
               <div className="text-xs opacity-70 mb-1">{m.role}</div>
-              <div className="whitespace-pre-wrap break-words">{m.content || (m.role === 'assistant' && sending ? '...' : '')}</div>
+              {m.role === 'user' ? (
+                <div className="whitespace-pre-wrap break-words">{m.content}</div>
+              ) : (
+                <div className="prose prose-sm max-w-none break-words">
+                  <ReactMarkdown>{m.content || (sending ? '...' : '')}</ReactMarkdown>
+                </div>
+              )}
             </div>
           ))}
           {!history.length && <div className="text-sm text-slate-500">{t('chat.start')}</div>}
